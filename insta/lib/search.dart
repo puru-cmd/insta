@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+//import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -132,7 +132,7 @@ class _SearchPageState extends State<SearchPage> {
                 )
              ),
             Container(
-              child: StaggeredGridView.count(
+              child: GridView.count(
                 crossAxisCount: 3,
                 physics: const NeverScrollableScrollPhysics(),
                 //scrollDirection: Axis.vertical,
