@@ -29,6 +29,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  #linkable: ^2.0.0
+  #url_launcher: ^6.0.6
+  flutter_staggered_grid_view: ^0.3.3
+  transparent_image: ^1.0.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -59,13 +63,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-     - assets/cristyan bohn.jpg
-     - assets/Instagram-Logo.png
-     - assets/klaus nielsen.jpg
-     - assets/luthfi ramaditya.jpg
-     - assets/meijii.jpg
-     - assets/mikhail nilov.jpg
-     - assets/sinitta leunen.jpg
+     - assets/
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

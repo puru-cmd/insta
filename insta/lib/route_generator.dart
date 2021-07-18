@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'main.dart';
+import 'first_page.dart';
+import 'second_page.dart';
+import 'third_page.dart';
+import 'navbar.dart';
 
 class RouteGenerator{
   static Route<dynamic> generateRoute(RouteSettings settings ){
@@ -21,7 +24,7 @@ class RouteGenerator{
         return _errorRoute();
       case '/home':
         if(args is String){
-          return MaterialPageRoute(builder: (_) => const MyPage(),
+          return MaterialPageRoute(builder: (_) => const MyNavBar(),
           );
         }
         return _errorRoute();
