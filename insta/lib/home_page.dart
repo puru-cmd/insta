@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'status_widget.dart';
 import 'post.dart';
-import 'navbar.dart';
 
 
 class MyPage extends StatefulWidget {
@@ -39,7 +38,7 @@ class _MyPageState extends State<MyPage> {
           ),
           IconButton(
             onPressed: (){
-              //Navigator.of(context).pushNamed('/profile',arguments: 'profile');
+              Navigator.of(context).pushNamed('/chat',arguments: 'chat');
             },
             icon: Image.asset('assets/message.png'),
             iconSize: 30.0,

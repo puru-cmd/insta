@@ -132,10 +132,11 @@ class _SearchPageState extends State<SearchPage> {
                 )
              ),
             Container(
-              child: GridView.count(
-                crossAxisCount: 3,
+              child: GridView.extent(
+                //crossAxisCount: 3,
                 physics: const NeverScrollableScrollPhysics(),
                 //scrollDirection: Axis.vertical,
+                maxCrossAxisExtent: 150,
                 mainAxisSpacing: 1.0,
                 crossAxisSpacing: 1.0,
                 shrinkWrap: true,

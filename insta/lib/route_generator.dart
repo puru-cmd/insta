@@ -3,6 +3,8 @@ import 'first_page.dart';
 import 'second_page.dart';
 import 'third_page.dart';
 import 'navbar.dart';
+import 'chatbox.dart';
+
 
 class RouteGenerator{
   static Route<dynamic> generateRoute(RouteSettings settings ){
@@ -25,6 +27,12 @@ class RouteGenerator{
       case '/home':
         if(args is String){
           return MaterialPageRoute(builder: (_) => const MyNavBar(),
+          );
+        }
+        return _errorRoute();
+      case '/chat':
+        if(args is String){
+          return MaterialPageRoute(builder: (_) => const ChatPage(),
           );
         }
         return _errorRoute();
