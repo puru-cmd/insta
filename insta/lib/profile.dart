@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-//import 'package:linkable/linkable.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:untitled/second_page.dart';
 
 
 class ProfilePage extends StatefulWidget {
@@ -10,6 +11,22 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  late SharedPreferences loginData;
+  late String userName;
+
+  @override
+  void initState() {
+    super.initState();
+    initial();
+  }
+
+  void initial()async{
+    loginData = await SharedPreferences.getInstance();
+    setState(() {
+      userName = loginData.getString('username')!;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,14 +42,41 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: (){},
                 icon: const Icon(Icons.lock,size: 15.0,color: Colors.black),
             ),
-            const DefaultTextStyle(
+            /*const DefaultTextStyle(
               style: TextStyle(color: Colors.black,fontSize: 16.0,fontWeight: FontWeight.w500),
               child: Text('cristyan_bohn'),
-            ),
-            IconButton(
-                onPressed: (){},
-                icon: const Icon(Icons.keyboard_arrow_down,color: Colors.black,)
-            )
+            ),*/
+            SizedBox(
+              height: 25,
+              width: 135,
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  iconSize: 26,
+                  elevation: 0,
+                  isExpanded: true,
+                  hint: const Text('cristyan_bohn'),
+                  icon: const Icon(Icons.keyboard_arrow_down,color: Colors.black,),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'One',
+                        child: TextButton(
+                          onPressed: (){
+                            loginData.setBool('login',true);
+                            Navigator.pushReplacement(context, MaterialPageRoute(
+                                builder: (context) => const SecondPage()));
+                          },
+                          child: const Text('Log Out'),
+                        ),
+                      )
+                    ],
+                    onChanged: (String? value){
+                      setState(() {
+                        //_value = value!;
+                      });
+                    },
+                  ) ,
+                )//value: _value,
+              )
           ],
         ),
       ),
@@ -152,8 +196,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
               ],
           ),
-          ),
-       //bottomNavigationBar: const MyNavBar(),
+        ),
     );
   }
 }
+
+

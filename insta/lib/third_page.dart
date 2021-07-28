@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+FirebaseAuth _auth = FirebaseAuth.instance;
 class ThirdPage extends StatefulWidget {
   const ThirdPage({Key? key}) : super(key: key);
 
@@ -8,6 +10,19 @@ class ThirdPage extends StatefulWidget {
 }
 
 class _ThirdPageState extends State<ThirdPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _repeatPwdController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _repeatPwdController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +38,9 @@ class _ThirdPageState extends State<ThirdPage> {
         ),
       ),
       extendBodyBehindAppBar: true,
-      body: SingleChildScrollView(
+      body: Form(
+        key: _formKey,
+      child: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -34,22 +51,23 @@ class _ThirdPageState extends State<ThirdPage> {
             ),
             Container(
               margin: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 15.0),
-              child: const TextField(
-                decoration: InputDecoration(
+              child: TextFormField(
+                decoration: const InputDecoration(
                   border: OutlineInputBorder(
                     //borderSide: BorderSide(
                     //color: Colors.grey
                     //)
                   ),
                   labelText: 'Username',
-                  hintText: 'Enter Your Name',
+                  hintText: 'Enter Your Email Address',
                 ),
+                controller: _emailController,
               ),
             ),
             Container(
               margin: const EdgeInsets.symmetric(vertical: 2.0,horizontal: 15.0),
-              child: const TextField(
-                decoration: InputDecoration(
+              child: TextFormField(
+                decoration: const InputDecoration(
                   //filled: true,
                   //fillColor: Colors.transparent,
                   border: OutlineInputBorder(
@@ -60,12 +78,14 @@ class _ThirdPageState extends State<ThirdPage> {
                   labelText: 'Password',
                   hintText: 'Enter Password',
                 ),
+                obscureText: true,
+                controller: _passwordController,
               ),
             ),
             Container(
               margin: const EdgeInsets.symmetric(vertical: 2.0,horizontal: 15.0),
-              child: const TextField(
-                decoration: InputDecoration(
+              child: TextFormField(
+                decoration: const InputDecoration(
                   //filled: true,
                   //fillColor: Colors.transparent,
                   border: OutlineInputBorder(
@@ -76,29 +96,38 @@ class _ThirdPageState extends State<ThirdPage> {
                   labelText: 'Confirm Password',
                   hintText: 'Enter Same Password',
                 ),
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 2.0,horizontal: 15.0),
-              child: const TextField(
-                decoration: InputDecoration(
-                  //filled: true,
-                  //fillColor: Colors.transparent,
-                  border: OutlineInputBorder(
-                    //borderSide: BorderSide(
-                    //  color: Colors.grey
-                    //  )
-                  ),
-                  labelText: 'Password',
-                  hintText: 'Enter Password',
-                ),
+                obscureText: true,
+                validator: (value){
+                  if(_passwordController.text != value){
+                    return 'Enter same password!';
+                  }
+                  return null;
+                },
+                controller: _repeatPwdController,
               ),
             ),
             Container(
               margin: const EdgeInsets.symmetric(vertical: 5.0,horizontal: 15.0),
               child: ElevatedButton(
-                onPressed: (){
-                  Navigator.of(context).pushNamed('/home',arguments: 'home');
+                onPressed: () async {
+                  try {
+                    if(_formKey.currentState!.validate()){
+                      _auth.createUserWithEmailAndPassword(
+                          email: _emailController.text, password: _passwordController.text);
+                      Navigator.of(context).pushNamed('/second',arguments: 'second');
+                    }
+                  } on FirebaseAuthException catch (e) {
+                    if (e.code == 'weak-password') {
+                      print('The password provided is too weak.');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Weak password!')));
+                    } else if (e.code == 'email-already-in-use') {
+                      print('The account already exists for that email.');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Account already exist!')));
+                    }
+                  }
                 },
                 child: const Text('Sign up'),
               ),
@@ -159,6 +188,7 @@ class _ThirdPageState extends State<ThirdPage> {
             )
           ],
         ),
+      ),
       ),
     );
   }
