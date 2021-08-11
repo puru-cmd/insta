@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/edit_page.dart';
 import 'first_page.dart';
 import 'second_page.dart';
 import 'third_page.dart';
 import 'navbar.dart';
 import 'chatbox.dart';
 
-
 class RouteGenerator{
   static Route<dynamic> generateRoute(RouteSettings settings ){
+    // getUsername();
     final args = settings.arguments;
     switch(settings.name){
       case '/':
@@ -33,6 +34,12 @@ class RouteGenerator{
       case '/chat':
         if(args is String){
           return MaterialPageRoute(builder: (_) => const ChatPage(),
+          );
+        }
+        return _errorRoute();
+      case '/edit':
+        if(args is String){
+          return MaterialPageRoute(builder: (_) =>  const EditProfile(),
           );
         }
         return _errorRoute();

@@ -216,11 +216,11 @@ class _ChatPageState extends State<ChatPage> {
               //padding: const  EdgeInsets.all(3.0),
               child: const CircleAvatar(
                 radius: 38.0,
-                backgroundImage: AssetImage('assets/charlote.jpg'),
+                backgroundImage: AssetImage('assets/charlotte.jpg'),
                 backgroundColor: Colors.white,
               ),
             ),
-            title: const Text('Bohn'),
+            title: const Text('Miguel'),
             subtitle: const Text('Have a nice day.bro!'),
             trailing: IconButton(
               onPressed: (){},

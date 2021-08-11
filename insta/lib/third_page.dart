@@ -1,5 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+
+import 'navbar.dart';
 
 FirebaseAuth _auth = FirebaseAuth.instance;
 class ThirdPage extends StatefulWidget {
@@ -10,6 +16,7 @@ class ThirdPage extends StatefulWidget {
 }
 
 class _ThirdPageState extends State<ThirdPage> {
+  final _userController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _repeatPwdController = TextEditingController();
@@ -17,6 +24,7 @@ class _ThirdPageState extends State<ThirdPage> {
 
   @override
   void dispose() {
+    _userController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _repeatPwdController.dispose();
@@ -59,7 +67,22 @@ class _ThirdPageState extends State<ThirdPage> {
                     //)
                   ),
                   labelText: 'Username',
-                  hintText: 'Enter Your Email Address',
+                  hintText: 'Enter Your Name',
+                ),
+                controller: _userController,
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 15.0),
+              child: TextFormField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(
+                    //borderSide: BorderSide(
+                    //color: Colors.grey
+                    //)
+                  ),
+                  labelText: 'Email Address',
+                  hintText: 'Enter Your Email',
                 ),
                 controller: _emailController,
               ),
@@ -112,9 +135,7 @@ class _ThirdPageState extends State<ThirdPage> {
                 onPressed: () async {
                   try {
                     if(_formKey.currentState!.validate()){
-                      _auth.createUserWithEmailAndPassword(
-                          email: _emailController.text, password: _passwordController.text);
-                      Navigator.of(context).pushNamed('/second',arguments: 'second');
+                      handleSignUp();
                     }
                   } on FirebaseAuthException catch (e) {
                     if (e.code == 'weak-password') {
@@ -191,5 +212,28 @@ class _ThirdPageState extends State<ThirdPage> {
       ),
       ),
     );
+  }
+  void handleSignUp()async{
+    await Firebase.initializeApp();
+    final _user = (await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text, password: _passwordController.text)).user;
+    SharedPreferences loginData = await SharedPreferences.getInstance();
+
+    if(_user!=null){
+
+      FirebaseFirestore.instance.collection('users').doc(_user.uid).set({
+        'id' : _user.uid,
+        'name' : _userController.text,
+        'created-at' : DateTime.now(),
+      });
+
+      await loginData.setString('id', _user.uid);
+      await loginData.setString('name', _userController.text);
+      await loginData.setBool('login', true);
+
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => const MyNavBar()));
+
+    }
   }
 }

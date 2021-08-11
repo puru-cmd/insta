@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/second_page.dart';
 
-
+FirebaseFirestore _firestore = FirebaseFirestore.instance;
+FirebaseAuth _auth = FirebaseAuth.instance;
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
 
@@ -11,21 +15,36 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   late SharedPreferences loginData;
-  late String userName;
+  String _username = '';
+  String _bio = '';
+  String imageUrl = 'https://cdn4.iconfinder.com/data/icons/mayssam/512/add_user-512.png';
 
   @override
   void initState() {
-    super.initState();
     initial();
+    super.initState();
   }
 
   void initial()async{
+    await Firebase.initializeApp();
     loginData = await SharedPreferences.getInstance();
-    setState(() {
-      userName = loginData.getString('username')!;
+    setState((){
+      _username = loginData.getString('name')!;
+      _bio = loginData.getString('bio')!;
+      imageUrl = loginData.getString('profileUrl')!;
+      print(_bio);
+      print(_username);
     });
   }
+
+  @override
+  void dispose() {
+    // loginData.clear();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +73,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   iconSize: 26,
                   elevation: 0,
                   isExpanded: true,
-                  hint: const Text('cristyan_bohn'),
+                  hint: Text(_username,style: const TextStyle(color: Colors.black,
+                      fontSize: 18,fontWeight: FontWeight.bold),),
                   icon: const Icon(Icons.keyboard_arrow_down,color: Colors.black,),
                   items: [
                     DropdownMenuItem(
@@ -63,7 +83,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           onPressed: (){
                             loginData.setBool('login',true);
                             Navigator.pushReplacement(context, MaterialPageRoute(
-                                builder: (context) => const SecondPage()));
+                                builder: (context) =>  const SecondPage()));
                           },
                           child: const Text('Log Out'),
                         ),
@@ -89,11 +109,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children:[
                     Container(
-                      //margin: const EdgeInsets.all(2.0),
-                      padding: const  EdgeInsets.all(3.0),
-                      child: const CircleAvatar(
+                      child: CircleAvatar(
                         radius: 38.0,
-                        backgroundImage: AssetImage('assets/cristyan bohn.jpg'),
+                        backgroundImage: NetworkImage(imageUrl),
                         backgroundColor: Colors.white,
                       ),
                       decoration: const BoxDecoration(
@@ -108,41 +126,59 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     Column(
                       children: const [
-                        Text('54'),
+                        Text('54',style: TextStyle(fontWeight: FontWeight.bold),),
                         Text('Posts'),
                       ],
                     ),
                     Column(
                       children: const [
-                        Text('834'),
+                        Text('834',style: TextStyle(fontWeight: FontWeight.bold),),
                         Text('Followers'),
                       ],
                     ),
                     Column(
                       children: const [
-                        Text('162'),
+                        Text('162',style: TextStyle(fontWeight: FontWeight.bold),),
                         Text('Following'),
                       ],
                     ),
                   ],
                 ),
-                Container(
-                  margin: const EdgeInsets.symmetric(vertical: 5.0,horizontal: 15.0),
-                  child: const Text(
-                      'Cristyan Bohn\n'
-                      'Digital goodies designer\n'
-                      'Everything is designed',style: TextStyle(fontSize: 13.0),),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10,vertical: 0),
+                          child: Text(_username,
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w400,),
+                          ),
+                        ),
+                        // const SizedBox(height: 1),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10,vertical: 0),
+                          child: Text('$_bio @hfjrk',style: const TextStyle(fontWeight: FontWeight.w400)),
+                        )
+                      ],
+                    ),
+                  ]
                 ),
                 Container(
-                  margin: const EdgeInsets.symmetric(vertical: 5.0,horizontal: 15.0),
+                  margin: const EdgeInsets.symmetric(vertical: 5.0,horizontal: 10.0),
                   child: RaisedButton(
-                      onPressed: (){},
-                      child: const Text('Edit Profile',style: TextStyle(fontWeight: FontWeight.w400),),
+                      onPressed: (){
+                        Navigator.of(context).pushNamed('/edit',arguments: 'edit');
+                      },
+                      child: const Text('Edit Profile',style: TextStyle(fontWeight: FontWeight.w500),),
                     color: Colors.white,
                     elevation: 1.0,
                   ),
                 ),
-                GridView.count(
+                Builder(),
+                /*GridView.count(
                     crossAxisCount: 3,
                     physics: const NeverScrollableScrollPhysics(),
                     //scrollDirection: Axis.vertical,
@@ -193,10 +229,52 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: Image.asset('assets/parker.jpg',fit: BoxFit.cover),
                       ),
                     ],
-                  ),
+                  ),*/
               ],
-          ),
         ),
+      ),
+    );
+  }
+}
+
+class Builder extends StatelessWidget {
+  const Builder({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+
+    final _uid = _auth.currentUser!.uid;
+
+    return StreamBuilder<QuerySnapshot>(
+        stream: _firestore.collection('post').where('uid',isEqualTo: _uid).snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+          if(snapshot.hasData) {
+            return ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  DocumentSnapshot doc = snapshot.data!.docs[index];
+                  // children: snapshot.data!.docs.map((DocumentSnapshot document){
+                  //   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                  return GridView.count(
+                    crossAxisCount: 3,
+                    physics: const NeverScrollableScrollPhysics(),
+                    //scrollDirection: Axis.vertical,
+                    mainAxisSpacing: 1.0,
+                    crossAxisSpacing: 1.0,
+                    shrinkWrap: true,
+                    children: [
+                      Container(
+                        child: Image.network(doc['image'],fit: BoxFit.cover,),
+                      ),
+                    ]
+                  );
+                }
+            );
+          }
+          return const Text('Loading...');
+        }
     );
   }
 }

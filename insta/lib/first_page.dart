@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+//import 'package:firebase_auth/firebase_auth.dart';
 
 
+//FirebaseAuth _auth = FirebaseAuth.instance;
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key}) : super(key: key);
 
@@ -75,8 +77,10 @@ class _FirstPage extends State<FirstPage> {
             Container(
               child: ElevatedButton(
                 onPressed: (){
-                  Navigator.of(context).pushNamed('/second',arguments: 'second page',);
+                  //print(_auth.currentUser!.uid);
+                  Navigator.of(context).pushNamed('/second',arguments: 'second',);
                 },
+
                 child: const Text('Log in'),
               ),
               margin: const EdgeInsets.symmetric(vertical: 20.0,horizontal: 30.0),

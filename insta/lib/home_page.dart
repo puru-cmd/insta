@@ -1,9 +1,16 @@
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'status_widget.dart';
 import 'post.dart';
 
-
+FirebaseFirestore _firestore = FirebaseFirestore.instance;
 class MyPage extends StatefulWidget {
   const MyPage({Key? key}) : super(key: key);
 
@@ -12,6 +19,23 @@ class MyPage extends StatefulWidget {
 }
 
 class _MyPageState extends State<MyPage> {
+
+  late SharedPreferences loginData;
+  String imageUrl = 'https://cdn4.iconfinder.com/data/icons/mayssam/512/add_user-512.png';
+
+  @override
+  void initState() {
+    super.initState();
+    initial();
+  }
+
+  void initial()async{
+    await Firebase.initializeApp();
+    loginData = await SharedPreferences.getInstance();
+    setState(() {
+      imageUrl = loginData.getString('profileUrl')!;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +78,33 @@ class _MyPageState extends State<MyPage> {
             scrollDirection: Axis.horizontal,
             //margin: const EdgeInsets.all(1.0),
             child: Row(
-              children: const [
-                Status(photo: 'assets/cristyan bohn.jpg',name: 'Your Story'),
+              children:  [
+                Container(
+                  margin: const EdgeInsets.all(10.0),
+                  child: Column(
+                    children: [
+                      Container(
+                      //margin: const EdgeInsets.all(2.0),
+                      padding: const  EdgeInsets.all(3.0),
+                      child: CircleAvatar(
+                        radius: 38.0,
+                        backgroundImage: NetworkImage(imageUrl),
+                        backgroundColor: Colors.white,
+                      ),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                            colors: [
+                              Colors.amber,
+                              Colors.red,
+                            ]
+                        ),
+                      ),
+                    ),
+                  const Text('Your Story'),
+                ],
+              ),
+            ),
                 Status(photo: 'assets/klaus nielsen.jpg',name: 'Klaus Nielsen '),
                 Status(photo: 'assets/luthfi ramaditya.jpg',name: 'Ramaditya'),
                 Status(photo: 'assets/meijii.jpg',name: 'Meijii'),
@@ -67,7 +116,8 @@ class _MyPageState extends State<MyPage> {
           const Divider(
             color: Colors.grey,
           ),
-          Column(
+          Builder(),
+         /* Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
                Post(
@@ -182,7 +232,7 @@ class _MyPageState extends State<MyPage> {
                 post_caption: 'Ramaditya #Wanderlust',
               ),
             ],
-          ),
+          ),*/
         ],
       ),
       //bottomNavigationBar: const MyNavBar(),
@@ -191,6 +241,107 @@ class _MyPageState extends State<MyPage> {
   }
 }
 
+class Builder extends StatelessWidget {
+  const Builder({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    bool _pressed = false;
+
+    return StreamBuilder<QuerySnapshot>(
+        stream: _firestore.collection('post').orderBy('time',descending: true).snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+          if(snapshot.hasData) {
+            return ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  DocumentSnapshot doc = snapshot.data!.docs[index];
+                  // children: snapshot.data!.docs.map((DocumentSnapshot document){
+                  //   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 0.0,horizontal: 10.0),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 20.0,
+                              backgroundImage: NetworkImage(doc['profile']),
+                            ),
+                            Expanded(
+                              child: ListTile(
+                                title: Text(doc['name']),
+                                subtitle: Text(doc['location']),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 8.0,horizontal: 0.0),
+                        child: Image.network(doc['image']),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            IconButton(
+                              icon: _pressed?Image.asset('assets/red_heart.png'):Image.asset('assets/heart.png'),
+                              onPressed: (){
+                                  _pressed = !_pressed;
+                                final snackbar = SnackBar(
+                                  content: const Text('You have liked post'),
+                                  duration: const Duration(seconds: 2),
+                                  action: SnackBarAction(
+                                    textColor: Colors.amber,
+                                    label: 'Undo',
+                                    onPressed: () {
+                                      // Some code to undo the change.
+                                    },
+                                  ),
+                                );
+                                Scaffold.of(context).showSnackBar(snackbar);
+                              },
+                              iconSize: 30.0,
+                            ),
+                            IconButton(
+                              onPressed: (){},
+                              icon: Image.asset('assets/comment.png'),
+                              iconSize: 30.0,
+                            ),
+                            IconButton(
+                              onPressed: (){},
+                              icon: Image.asset('assets/message.png'),
+                              iconSize: 30.0,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                          'Liked by  ${doc['likes']} others'
+                      ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 5.0,horizontal: 18.0),
+                        child: Text(doc['description']),
+                      ),
+                    ],
+                  );
+                }
+            );
+          }
+          return const Text('Loading...');
+        }
+    );
+  }
+}
+
+GestureDetector(){
+
+}
 
 
 

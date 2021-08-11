@@ -1,11 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/navbar.dart';
-import 'popUp_page.dart';
+import 'popup_page.dart';
 
-FirebaseAuth _auth = FirebaseAuth.instance;
+FirebaseAuth _auth =  FirebaseAuth.instance;
+
 class SecondPage extends StatefulWidget {
+
   const SecondPage({Key? key}) : super(key: key);
 
   @override
@@ -14,24 +18,21 @@ class SecondPage extends StatefulWidget {
 
 class _SecondPageState extends State<SecondPage> {
   final _formKey = GlobalKey<FormState>();
-  final _userNameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
-  late SharedPreferences loginData;
-  late bool newUser;
 
   @override
   void initState() {
-    super.initState();
     login_status();
+    super.initState();
   }
-  
+
   void login_status()async{
-    loginData = await SharedPreferences.getInstance();
-    newUser = (loginData.getBool('login')?? true);
-    
-    print(newUser);
-    if(newUser == false){
+    SharedPreferences loginData = await SharedPreferences.getInstance();
+    bool flag = loginData.getBool('login')?? true;
+
+    print(flag);
+    if(flag == false){
       Navigator.pushReplacement(context,
           MaterialPageRoute(builder: (builder) => const MyNavBar()));
     }
@@ -40,7 +41,7 @@ class _SecondPageState extends State<SecondPage> {
   @override
   void dispose() {
     _passwordController.dispose();
-    _userNameController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -79,10 +80,10 @@ class _SecondPageState extends State<SecondPage> {
                       //color: Colors.grey
                       //)
                     ),
-                    labelText: 'Username',
+                    labelText: 'Email Address',
                     hintText: 'Enter Your Email Address',
                   ),
-                  controller: _userNameController,
+                  controller: _emailController,
                 ),
               ),
               Container(
@@ -99,6 +100,7 @@ class _SecondPageState extends State<SecondPage> {
                     labelText: 'Password',
                     hintText: 'Enter Password',
                   ),
+                  obscureText: true,
                   controller: _passwordController,
                 ),
               ),
@@ -113,8 +115,8 @@ class _SecondPageState extends State<SecondPage> {
                             content: Stack(
                               overflow: Overflow.visible,
                               alignment: Alignment.center,
-                              children: [
-                                PopUp(),
+                              children: const [
+                                 PopUp(),
                               ],
                             ),
                           );
@@ -128,16 +130,9 @@ class _SecondPageState extends State<SecondPage> {
                 margin: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 15.0),
                 child: ElevatedButton(
                   onPressed: () async {
-                    String _email = _userNameController.text;
-                    String _password = _passwordController.text;
                     try{
-                      if(_email != '' && _password != '') {
-                        loginData.setBool('login', false);
-                        loginData.setString('username', _email);
-                        await _auth.signInWithEmailAndPassword(
-                            email: _email, password: _password);
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (context) => const MyNavBar()));
+                      if(_emailController.text != '' && _passwordController.text != '') {
+                        handleSignIn();
                       }
                     }on FirebaseAuthException catch (e){
                       if(e.code == 'user-not-found'){
@@ -214,5 +209,25 @@ class _SecondPageState extends State<SecondPage> {
         ),
       ),
     );
+  }
+  void handleSignIn()async{
+    await Firebase.initializeApp();
+    SharedPreferences loginData = await SharedPreferences.getInstance();
+    final _user = (await _auth.signInWithEmailAndPassword(
+        email: _emailController.text, password: _passwordController.text)).user;
+
+    // if(_user!=null) {
+      FirebaseFirestore.instance.collection('users')
+          .doc(_user!.uid).snapshots(includeMetadataChanges: true).listen((event)async{
+            await loginData.setString('id', event.get('id'));
+            await loginData.setString('name', event.get('name'));
+            await loginData.setString('bio', event.get('bio'));
+            await loginData.setString('profileUrl', event.get('profileUrl'));
+            await  loginData.setBool('login', false);
+          });
+
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const MyNavBar()));
+    // }
   }
 }
