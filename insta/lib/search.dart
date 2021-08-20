@@ -2,10 +2,10 @@ import 'dart:core';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'stagger.dart';
+import 'package:untitled/profile.dart';
+import 'package:untitled/user.dart';
 
 FirebaseAuth _auth = FirebaseAuth.instance;
 FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -19,7 +19,6 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
 
   String name = '';
-  final TextEditingController _searchController = TextEditingController();
 
   searchField(){
     return AppBar(
@@ -90,7 +89,15 @@ class _SearchPageState extends State<SearchPage> {
                           subtitle: Text('${doc['bio']}'),
                         ),
                         onTap: (){
-
+                          String uid = _auth.currentUser!.uid;
+                          String userId = Text("${doc['id']}") as String;
+                          if(uid == userId){
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => const ProfilePage()));
+                          }else{
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => UserPage(userId: userId,)));
+                          }
                         },
                       );
                     }

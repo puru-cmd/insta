@@ -255,12 +255,9 @@ class Builder extends StatelessWidget {
                 itemCount: snapshot.data!.docs.length,
                 itemBuilder: (context, index) {
                   DocumentSnapshot doc = snapshot.data!.docs[index];
-                  // children: snapshot.data!.docs.map((DocumentSnapshot document){
-                  //   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                   return GridView.count(
                     crossAxisCount: 3,
                     physics: const NeverScrollableScrollPhysics(),
-                    //scrollDirection: Axis.vertical,
                     mainAxisSpacing: 1.0,
                     crossAxisSpacing: 1.0,
                     shrinkWrap: true,

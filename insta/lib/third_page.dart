@@ -225,11 +225,15 @@ class _ThirdPageState extends State<ThirdPage> {
         'id' : _user.uid,
         'name' : _userController.text,
         'created-at' : DateTime.now(),
+        'profileUrl' : 'https://cdn4.iconfinder.com/data/icons/mayssam/512/add_user-512.png',
+        'bio' : '',
       });
 
       await loginData.setString('id', _user.uid);
       await loginData.setString('name', _userController.text);
       await loginData.setBool('login', true);
+      await loginData.setString('profileUrl', 'https://cdn4.iconfinder.com/data/icons/mayssam/512/add_user-512.png');
+      await loginData.setString('bio', '');
 
       Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => const MyNavBar()));
